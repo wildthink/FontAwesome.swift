@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-//import UIKit
 import CoreText
 
 #if os(iOS)
@@ -120,17 +119,25 @@ public extension Image {
 
 // MARK: - Private
 
-private class FontLoader {
+private class FontLoader
+{
     class func loadFont(name: String) {
         let bundle = NSBundle(forClass: FontLoader.self)
         var fontURL = NSURL()
-        let identifier = bundle.bundleIdentifier
 
-        if identifier?.hasPrefix("org.cocoapods") == true {
-            // If this framework is added using CocoaPods, resources is placed under a subdirectory
-            fontURL = bundle.URLForResource(name, withExtension: "otf", subdirectory: "FontAwesome.swift.bundle")!
-        } else {
-            fontURL = bundle.URLForResource(name, withExtension: "otf")!
+        // If this framework is added using CocoaPods, resources are placed under a subdirectory
+        // bundle.bundleIdentifier?.hasPrefix("org.cocoapods") == true
+        let searchPaths = [
+            "",
+            "FontAwesome.swift.bundle",
+            "FontAwesome.swift.bundle/Contents",
+            "FontAwesome.swift.bundle/Contents/Resources/"]
+        
+        for dir in searchPaths {
+            if let url = bundle.URLForResource(name, withExtension: "otf", subdirectory: dir) {
+                fontURL = url
+                break
+            }
         }
 
         let data = NSData(contentsOfURL: fontURL)!
