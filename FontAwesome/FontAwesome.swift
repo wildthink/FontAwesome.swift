@@ -20,31 +20,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import UIKit
+//import UIKit
 import CoreText
+
+#if os(iOS)
+    public typealias Font = UIFont
+    public typealias Image = UIImage
+    public typealias Color = UIColor
+#else
+    public typealias Font = NSFont
+    public typealias Image = NSImage
+    public typealias Color = NSColor
+#endif
 
 // MARK: - Public
 
 /// A FontAwesome extension to UIFont.
-public extension UIFont {
+public extension Font {
 
     /// Get a UIFont object of FontAwesome.
     ///
     /// - parameter fontSize: The preferred font size.
     /// - returns: A UIFont object of FontAwesome.
-    public class func fontAwesomeOfSize(fontSize: CGFloat) -> UIFont {
+    public class func fontAwesomeOfSize(fontSize: CGFloat) -> Font {
         struct Static {
             static var onceToken : dispatch_once_t = 0
         }
 
         let name = "FontAwesome"
-        if UIFont.fontNamesForFamilyName(name).isEmpty {
+//        if Font.fontNamesForFamilyName(name).isEmpty {
             dispatch_once(&Static.onceToken) {
                 FontLoader.loadFont(name)
             }
-        }
+//        }
 
-        return UIFont(name: name, size: fontSize)!
+        return Font(name: name, size: fontSize)!
     }
 }
 
@@ -72,8 +82,8 @@ public extension String {
     }
 }
 
-/// A FontAwesome extension to UIImage.
-public extension UIImage {
+/// A FontAwesome extension to Image.
+public extension Image {
 
     /// Get a FontAwesome image with the given icon name, text color, size and an optional background color.
     ///
@@ -82,7 +92,8 @@ public extension UIImage {
     /// - parameter size: The image size.
     /// - parameter backgroundColor: The background color (optional).
     /// - returns: A string that will appear as icon with FontAwesome
-    public static func fontAwesomeIconWithName(name: FontAwesome, textColor: UIColor, size: CGSize, backgroundColor: UIColor = UIColor.clearColor()) -> UIImage {
+    public static func fontAwesomeIconWithName(name: FontAwesome, textColor: Color, size: CGSize,
+        backgroundColor: Color = Color.clearColor()) -> Image {
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = NSTextAlignment.Center
         
@@ -90,11 +101,19 @@ public extension UIImage {
         let fontAspectRatio: CGFloat = 1.28571429
         
         let fontSize = min(size.width / fontAspectRatio, size.height)
-        let attributedString = NSAttributedString(string: String.fontAwesomeIconWithName(name), attributes: [NSFontAttributeName: UIFont.fontAwesomeOfSize(fontSize), NSForegroundColorAttributeName: textColor, NSBackgroundColorAttributeName: backgroundColor, NSParagraphStyleAttributeName: paragraph])
-        UIGraphicsBeginImageContextWithOptions(size, false , 0.0)
-        attributedString.drawInRect(CGRectMake(0, (size.height - fontSize) / 2, size.width, fontSize))
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
+        let attributedString = NSAttributedString(string: String.fontAwesomeIconWithName(name), attributes: [NSFontAttributeName: Font.fontAwesomeOfSize(fontSize), NSForegroundColorAttributeName: textColor, NSBackgroundColorAttributeName: backgroundColor, NSParagraphStyleAttributeName: paragraph])
+            
+            #if os(iOS)
+                UIGraphicsBeginImageContextWithOptions(size, false , 0.0)
+                attributedString.drawInRect(CGRectMake(0, (size.height - fontSize) / 2, size.width, fontSize))
+                let image = UIGraphicsGetImageFromCurrentImageContext()
+                UIGraphicsEndImageContext()
+            #else
+                let image = Image(size: NSSize(width: size.width, height: fontSize))
+                image.lockFocus()
+                attributedString.drawInRect(CGRectMake(0, (size.height - fontSize) / 2, size.width, fontSize))
+                image.unlockFocus()
+            #endif
         return image
     }
 }

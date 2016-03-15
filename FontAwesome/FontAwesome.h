@@ -20,7 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "TargetConditionals.h"
+
+#if TARGET_IPHONE_SIMULATOR
 #import <UIKit/UIKit.h>
+
+#elif TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+
+#elif TARGET_OS_MAC
+#import <Cocoa/Cocoa.h>
+
+#else
+// Unsupported platform
+#endif
 
 FOUNDATION_EXPORT double FontAwesomeVersionNumber;
 FOUNDATION_EXPORT const unsigned char FontAwesomeVersionString[];
